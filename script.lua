@@ -73,6 +73,7 @@ function onCustomCommand(full_message, user_peer_id, is_admin, is_auth, command,
 		"&moderator="..encode(server.getPlayerName(user_peer_id))..
 		"&banned_from="..encode(server_name)..
 		"&username="..encode(server.getPlayerName(tonumber(args[1]))))
+		server.announce("[Admin]", "Trying to ban peer ID "..args[1])
 	end
 end
 -- Internal functions.
