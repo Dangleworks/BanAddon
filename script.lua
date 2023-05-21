@@ -1,7 +1,7 @@
 -- Here be the few config options, make sure they line up with your BanDB config.json
 port = 9007
 server_name = "Server"
-
+password = "ChangeMeFuckBoi"
 steam_ids = {}
 peer_ids = {}
 tick = 0
@@ -16,7 +16,7 @@ end
 function onPlayerJoin(steam_id, name, peer_id, admin, auth)
 	steam_ids[peer_id] = tostring(steam_id)
 	peer_ids[tostring(steam_id)] = peer_id
-	server.httpGet(port, "/check?steam_id="..steam_id)
+	server.httpGet(port, "/check?steam_id=" .. steam_id .. "&p=" .. password)
 end
 
 function onPlayerLeave(steam_id, name, peer_id, is_admin, is_auth)
@@ -29,11 +29,11 @@ function onTick()
 	if tick % 60 == 0 then
 		tick = 0
 		local players = ""
-		for _ ,player in pairs(server.getPlayers()) do
-			players = players..player.steam_id..","
+		for _, player in pairs(server.getPlayers()) do
+			players = players .. player.steam_id .. ","
 		end
-		players = string.sub(players, 1, (#players-1))
-		server.httpGet(port, "/checkall?ids="..players)
+		players = string.sub(players, 1, (#players - 1))
+		server.httpGet(port, "/checkall?ids=" .. players .. "&p=" .. password)
 	end
 end
 
@@ -60,7 +60,7 @@ function httpReply(rport, request, reply)
 end
 
 function onCustomCommand(full_message, user_peer_id, is_admin, is_auth, command, ...)
-	local args = {...}
+	local args = { ... }
 	if not is_admin then return end
 	if command == "?b" then
 		local _, exists = server.getPlayerName(tonumber(args[1]))
@@ -68,14 +68,16 @@ function onCustomCommand(full_message, user_peer_id, is_admin, is_auth, command,
 			server.announce("[Admin]", "Player does not exist!", user_peer_id)
 			return
 		end
-		server.httpGet(port, "/ban?steam_id="..tostring(steam_ids[tonumber(args[1])])..
-		"&reason="..encode(slice(args, 2))..
-		"&moderator="..encode(server.getPlayerName(user_peer_id))..
-		"&banned_from="..encode(server_name)..
-		"&username="..encode(server.getPlayerName(tonumber(args[1]))))
-		server.announce("[Admin]", "Trying to ban peer ID "..args[1])
+		server.httpGet(port, "/ban?steam_id=" .. tostring(steam_ids[tonumber(args[1])]) ..
+			"&reason=" .. encode(slice(args, 2)) ..
+			"&moderator=" .. encode(server.getPlayerName(user_peer_id)) ..
+			"&banned_from=" .. encode(server_name) ..
+			"&username=" .. encode(server.getPlayerName(tonumber(args[1]))) .. 
+			"&p=" .. password)
+		server.announce("[Admin]", "Trying to ban peer ID " .. args[1])
 	end
 end
+
 -- Internal functions.
 
 function encode(str)
@@ -98,14 +100,14 @@ function slice(T, start, stop)
 	end
 	local i = start
 	while i <= stop do
-		result = result..T[i].." "
+		result = result .. T[i] .. " "
 		i = i + 1
 	end
 	return result
 end
 
-function string.starts(String,Start)
-	return string.sub(String,1,string.len(Start))==Start
+function string.starts(String, Start)
+	return string.sub(String, 1, string.len(Start)) == Start
 end
 
 json = {}
@@ -128,8 +130,8 @@ local function kind_of(obj)
 end
 
 local function escape_str(s)
-	local in_char = {'\\', '"', '/', '\b', '\f', '\n', '\r', '\t'}
-	local out_char = {'\\', '"', '/', 'b', 'f', 'n', 'r', 't'}
+	local in_char = { '\\', '"', '/', '\b', '\f', '\n', '\r', '\t' }
+	local out_char = { '\\', '"', '/', 'b', 'f', 'n', 'r', 't' }
 	for i, c in ipairs(in_char) do s = s:gsub(c, '\\' .. out_char[i]) end
 	return s
 end
@@ -157,7 +159,7 @@ local function parse_str_val(str, pos, val)
 	if c == '"' then return val, pos + 1 end
 	if c ~= '\\' then return parse_str_val(str, pos + 1, val .. c) end
 	-- We must have a \ character.
-	local esc_map = {b = '\b', f = '\f', n = '\n', r = '\r', t = '\t'}
+	local esc_map = { b = '\b', f = '\f', n = '\n', r = '\r', t = '\t' }
 	local nextc = str:sub(pos + 1, pos + 1)
 	if not nextc then return nil end
 	return parse_str_val(str, pos + 2, val .. (esc_map[nextc] or nextc))
@@ -174,7 +176,7 @@ end
 -- Public values and functions.
 
 function json.stringify(obj, as_key)
-	local s = {} -- We'll build the string as an array of strings to be concatenated.
+	local s = {}           -- We'll build the string as an array of strings to be concatenated.
 	local kind = kind_of(obj) -- This is 'array' if it's an array or type(obj) otherwise.
 	if kind == "array" then
 		if as_key then return nil end
@@ -216,7 +218,7 @@ function json.parse(str, pos, end_delim)
 	if pos > #str then return nil end
 	local pos = pos + #str:match("^%s*", pos) -- Skip whitespace.
 	local first = str:sub(pos, pos)
-	if first == "{" then -- Parse an object.
+	if first == "{" then                   -- Parse an object.
 		local obj, key, delim_found = {}, true, true
 		pos = pos + 1
 		while true do
@@ -237,13 +239,13 @@ function json.parse(str, pos, end_delim)
 			arr[#arr + 1] = val
 			pos, delim_found = skip_delim(str, pos, ",")
 		end
-	elseif first == '"' then -- Parse a string.
+	elseif first == '"' then                   -- Parse a string.
 		return parse_str_val(str, pos + 1)
 	elseif first == "-" or first:match("%d") then -- Parse a number.
 		return parse_num_val(str, pos)
-	elseif first == end_delim then -- End of an object or array.
+	elseif first == end_delim then             -- End of an object or array.
 		return nil, pos + 1
-	else -- Parse true, false, or null.
+	else                                       -- Parse true, false, or null.
 		local literals = {
 			["true"] = true,
 			["false"] = false,
