@@ -7,6 +7,7 @@ peer_ids = {}
 tick = 0
 
 function onCreate(is_world_create)
+	server.command("ident")
 	for _, player in pairs(server.getPlayers()) do
 		steam_ids[player.id] = tostring(player.steam_id)
 		peer_ids[tostring(player.steam_id)] = player.id
@@ -61,6 +62,14 @@ end
 
 function onCustomCommand(full_message, user_peer_id, is_admin, is_auth, command, ...)
 	local args = { ... }
+	if command == "identresp" and user_peer_id == -1 then -- This is a response to the ident from and identity provider
+		local ident = ""
+		for i,v in ipairs(args) do
+			ident = ident .. v .. " "
+		end
+		ident = string.sub(ident, 1, -2) -- remove the last space
+		server_name = ident
+	end
 	if not is_admin then return end
 	if command == "?b" then
 		local _, exists = server.getPlayerName(tonumber(args[1]))
