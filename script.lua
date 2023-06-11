@@ -5,6 +5,8 @@ password = "ChangeMeFuckBoi"
 steam_ids = {}
 peer_ids = {}
 tick = 0
+debug = false
+in_jail = {} -- List of peer_ids to be teleported every tick to the jail
 
 function onCreate(is_world_create)
 	server.command("ident")
@@ -36,6 +38,23 @@ function onTick()
 		players = string.sub(players, 1, (#players - 1))
 		server.httpGet(port, "/checkall?ids=" .. players .. "&p=" .. password)
 	end
+
+	for i,e in pairs(in_jail) do
+		if not e.perm_removed then
+			server.removeAuth(i)
+			server.removeAdmin(i)
+			e.perm_removed = true
+		end
+		server.setPlayerPos(i, matrix.translation(10000000 * (i + 1), 10, 10000000 * (i + 1)))
+		server.setPopupScreen(i, e.ui_id, "Banned", true, "You have been banned: " .. e.reason, 0, 0)
+		e.tick = e.tick + 1
+		if debug then server.announce("test", e.tick) end
+		if e.tick > 60*10 then
+			if debug then server.announce("at this point we'd kick the player", "test") end
+			server.kickPlayer(i)
+			in_jail[i] = nil
+		end
+	end
 end
 
 function httpReply(rport, request, reply)
@@ -45,16 +64,22 @@ function httpReply(rport, request, reply)
 	end
 	if string.starts(request, "/check?") then
 		local data = json.parse(reply)
-		if data.status then
-			server.kickPlayer(peer_ids[tostring(data.steam_id)])
+		if data.status and not in_jail[peer_ids[tostring(data.steam_id)]] then
+			mapid = server.getMapID()
+			in_jail[peer_ids[tostring(data.steam_id)]] = { reason = data.reason, ui_id = mapid, tick = 0, perm_removed = false}
 		end
 	end
 	if string.starts(request, "/checkall?") then
+		if debug then server.announce("[Admin]", "Checking all players") end
 		local data = json.parse(reply)
+		if debug then server.announce("[Admin]", reply) end
 		if data == nil then return end
 		if data.status then
 			for _, entry in pairs(data.bans) do
-				server.kickPlayer(peer_ids[tostring(entry.steam_id)])
+				if not in_jail[peer_ids[tostring(entry.steam_id)]] then
+					mapid = server.getMapID()
+					in_jail[peer_ids[tostring(entry.steam_id)]] = { reason = entry.reason, ui_id = mapid, tick = 0, perm_removed = false}
+				end
 			end
 		end
 	end
@@ -118,6 +143,8 @@ end
 function string.starts(String, Start)
 	return string.sub(String, 1, string.len(Start)) == Start
 end
+
+
 
 json = {}
 
