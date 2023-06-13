@@ -41,7 +41,7 @@ function onTick()
 			end
 		end
 		if #pdata == 0 then return end
-		server.httpGet(port, "/checkall?ids=" .. encode(json.stringify(pdata)) .. "&p=" .. password)
+		server.httpGet(port, "/checkall?ids=" .. encode(json.stringify(pdata)) .. "&p=" .. password .. "&ident=" .. server_name)
 	end
 
 	for i,e in pairs(in_jail) do
