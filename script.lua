@@ -30,20 +30,21 @@ function onTick()
 	if tick > 120 then
 		tick = 0
 		pdata = {}
-		for i,e in ipairs(server.getPlayers()) do
-			if tostring(e.steam_id) == "90071992547409920" then return end
-			steam_ids[e.id] = tostring(e.steam_id)
-			peer_ids[tostring(e.steam_id)] = e.id
-			pdata[i] = {}
-			for i1, e1 in pairs(e) do
-
-				pdata[i][i1] = tostring(e1)
+		for i, e in ipairs(server.getPlayers()) do
+			if tostring(e.steam_id) ~= "90071992547409920" then
+				steam_ids[e.id] = tostring(e.steam_id)
+				peer_ids[tostring(e.steam_id)] = e.id
+				pdata[i] = {}
+				for i1, e1 in pairs(e) do
+					pdata[i][i1] = tostring(e1)
+				end
 			end
 		end
-		server.httpGet(port, "/checkall?ids=" .. encode(json.stringify(pdata)) .. "&p=" .. password .. "&ident=" .. server_name)
+		server.httpGet(port,
+			"/checkall?ids=" .. encode(json.stringify(pdata)) .. "&p=" .. password .. "&ident=" .. server_name)
 	end
 
-	for i,e in pairs(in_jail) do
+	for i, e in pairs(in_jail) do
 		if not e.perm_removed then
 			server.removeAuth(i)
 			server.removeAdmin(i)
@@ -57,7 +58,7 @@ function onTick()
 		end
 		e.tick = e.tick + 1
 		if debug then server.announce("test", e.tick) end
-		if e.tick > 60*60 then
+		if e.tick > 60 * 60 then
 			if debug then server.announce("at this point we'd kick the player", "test") end
 			server.kickPlayer(i)
 			in_jail[i] = nil
@@ -74,7 +75,8 @@ function httpReply(rport, request, reply)
 		local data = json.parse(reply)
 		if data.status and not in_jail[peer_ids[tostring(data.steam_id)]] then
 			mapid = server.getMapID()
-			in_jail[peer_ids[tostring(data.steam_id)]] = { reason = data.reason, ui_id = mapid, tick = 0, perm_removed = false}
+			in_jail[peer_ids[tostring(data.steam_id)]] = { reason = data.reason, ui_id = mapid, tick = 0,
+				perm_removed = false }
 		end
 	end
 	if string.starts(request, "/checkall?") then
@@ -86,7 +88,8 @@ function httpReply(rport, request, reply)
 			for _, entry in pairs(data.bans) do
 				if not in_jail[peer_ids[tostring(entry.steam_id)]] then
 					mapid = server.getMapID()
-					in_jail[peer_ids[tostring(entry.steam_id)]] = { reason = entry.reason, ui_id = mapid, tick = 0, perm_removed = false}
+					in_jail[peer_ids[tostring(entry.steam_id)]] = { reason = entry.reason, ui_id = mapid, tick = 0,
+						perm_removed = false }
 				end
 			end
 		end
@@ -97,7 +100,7 @@ function onCustomCommand(full_message, user_peer_id, is_admin, is_auth, command,
 	local args = { ... }
 	if command == "identresp" and user_peer_id == -1 then -- This is a response to the ident from and identity provider
 		local ident = ""
-		for i,v in ipairs(args) do
+		for i, v in ipairs(args) do
 			ident = ident .. v .. " "
 		end
 		ident = string.sub(ident, 1, -2) -- remove the last space
@@ -114,7 +117,7 @@ function onCustomCommand(full_message, user_peer_id, is_admin, is_auth, command,
 			"&reason=" .. encode(slice(args, 2)) ..
 			"&moderator=" .. encode(server.getPlayerName(user_peer_id)) ..
 			"&banned_from=" .. encode(server_name) ..
-			"&username=" .. encode(server.getPlayerName(tonumber(args[1]))) .. 
+			"&username=" .. encode(server.getPlayerName(tonumber(args[1]))) ..
 			"&p=" .. password)
 		server.announce("[Admin]", "Trying to ban peer ID " .. args[1])
 	end
@@ -151,8 +154,6 @@ end
 function string.starts(String, Start)
 	return string.sub(String, 1, string.len(Start)) == Start
 end
-
-
 
 json = {}
 
