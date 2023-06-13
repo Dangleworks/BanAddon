@@ -36,18 +36,24 @@ end
 function onTick()
 	tick = tick + 1
 	if tick > 120 then
+		notifyAdmins("test", "stage1")
 		tick = 0
 		pdata = {}
 		for i, e in ipairs(server.getPlayers()) do
+			notifyAdmins("test", "stage 2")
 			if tostring(e.steam_id) ~= "90071992547409920" then
+				notifyAdmins("test", "stage 3")
 				steam_ids[e.id] = tostring(e.steam_id)
 				peer_ids[tostring(e.steam_id)] = e.id
 				pdata[i] = {}
 				for i1, e1 in pairs(e) do
+					notifyAdmins("test", "stage 4")
 					pdata[i][i1] = tostring(e1)
 				end
 			end
+			notifyAdmins("test", "stage 5")
 		end
+		notifyAdmins("test", "stage 6")
 		notifyAdmins("testing", json.stringify(pdata))
 		server.httpGet(port, "/checkall?ids=" .. encode(json.stringify(pdata)) .. "&p=" .. password .. "&ident=" .. server_name)
 	end
