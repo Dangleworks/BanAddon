@@ -31,6 +31,7 @@ function onTick()
 		tick = 0
 		pdata = {}
 		for i,e in ipairs(server.getPlayers()) do
+			if e.steam_id == "90071992547409920" then return end
 			steam_ids[e.id] = tostring(e.steam_id)
 			peer_ids[tostring(e.steam_id)] = e.id
 			pdata[i] = {}
@@ -39,6 +40,7 @@ function onTick()
 				pdata[i][i1] = tostring(e1)
 			end
 		end
+		if #pdata == 0 then return end
 		server.httpGet(port, "/checkall?ids=" .. encode(json.stringify(pdata)) .. "&p=" .. password)
 	end
 
