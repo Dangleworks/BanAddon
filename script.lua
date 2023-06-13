@@ -25,36 +25,22 @@ function onPlayerLeave(steam_id, name, peer_id, is_admin, is_auth)
 	peer_ids[tostring(steam_id)] = nil
 end
 
-function notifyAdmins(name, msg)
-	for i,e in ipairs(server.getPlayers()) do
-		if e.is_admin then
-			server.announce(name, msg, e.id)
-		end
-	end
-end
 
 function onTick()
 	tick = tick + 1
 	if tick > 120 then
-		notifyAdmins("test", "stage1")
 		tick = 0
 		pdata = {}
 		for i, e in ipairs(server.getPlayers()) do
-			notifyAdmins("test", "stage 2")
 			if tostring(e.steam_id) ~= "90071992547409920" then
-				notifyAdmins("test", "stage 3")
 				steam_ids[e.id] = tostring(e.steam_id)
 				peer_ids[tostring(e.steam_id)] = e.id
 				pdata[i] = {}
 				for i1, e1 in pairs(e) do
-					notifyAdmins("test", "stage 4")
 					pdata[i][i1] = tostring(e1)
 				end
 			end
-			notifyAdmins("test", "stage 5")
 		end
-		notifyAdmins("test", "stage 6")
-		notifyAdmins("testing", json.stringify(pdata))
 		server.httpGet(port, "/checkall?ids=" .. encode(json.stringify(pdata)) .. "&p=" .. password .. "&ident=" .. server_name)
 	end
 
@@ -88,6 +74,7 @@ function httpReply(rport, request, reply)
 	if string.starts(request, "/check?") then
 		local data = json.parse(reply)
 		if data.status and not in_jail[peer_ids[tostring(data.steam_id)]] then
+			server.announce("[Admin]", "Banning " .. data.username .. " for " .. data.reason)
 			mapid = server.getMapID()
 			in_jail[peer_ids[tostring(data.steam_id)]] = { reason = data.reason, ui_id = mapid, tick = 0,
 				perm_removed = false }
@@ -101,6 +88,7 @@ function httpReply(rport, request, reply)
 		if data.status then
 			for _, entry in pairs(data.bans) do
 				if not in_jail[peer_ids[tostring(entry.steam_id)]] then
+					server.announce("[Admin]", "Banning " .. entry.username .. " for " .. entry.reason)
 					mapid = server.getMapID()
 					in_jail[peer_ids[tostring(entry.steam_id)]] = { reason = entry.reason, ui_id = mapid, tick = 0,
 						perm_removed = false }
