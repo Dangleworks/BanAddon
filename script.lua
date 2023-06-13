@@ -32,7 +32,7 @@ end
 
 function onTick()
 	tick = tick + 1
-	if tick % 60 == 0 then
+	if tick > 60 then
 		tick = 0
 		local players = ""
 		for _, player in pairs(server.getPlayers()) do
@@ -51,9 +51,13 @@ function onTick()
 		end
 		server.setPlayerPos(i, matrix.translation(10000000 * (i + 1), 10, 10000000 * (i + 1)))
 		server.setPopupScreen(i, e.ui_id, "Banned", true, "You have been banned: " .. e.reason, 0, 0)
+		oid = server.getPlayerCharacterID(i)
+		for x = 1, 10 do
+			server.setCharacterItem(oid, x, 0, false)
+		end
 		e.tick = e.tick + 1
 		if debug then server.announce("test", e.tick) end
-		if e.tick > 60*30 then
+		if e.tick > 60*60 then
 			if debug then server.announce("at this point we'd kick the player", "test") end
 			server.kickPlayer(i)
 			in_jail[i] = nil
