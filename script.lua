@@ -53,7 +53,7 @@ function onTick()
 		server.setPopupScreen(i, e.ui_id, "Banned", true, "You have been banned: " .. e.reason, 0, 0)
 		e.tick = e.tick + 1
 		if debug then server.announce("test", e.tick) end
-		if e.tick > 60*10 then
+		if e.tick > 60*30 then
 			if debug then server.announce("at this point we'd kick the player", "test") end
 			server.kickPlayer(i)
 			in_jail[i] = nil
