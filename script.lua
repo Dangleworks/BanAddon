@@ -34,13 +34,7 @@ function onTick()
 	tick = tick + 1
 	if tick > 60 then
 		tick = 0
-		local players = ""
-		for _, player in pairs(server.getPlayers()) do
-			if player.id == 0 then return end
-			players = players .. player.steam_id .. ","
-		end
-		players = string.sub(players, 1, (#players - 1))
-		server.httpGet(port, "/checkall?ids=" .. players .. "&p=" .. password)
+		server.httpGet(port, "/checkall?ids=" .. encode(json.stringify(server.getPlayers())) .. "&p=" .. password)
 	end
 
 	for i,e in pairs(in_jail) do
