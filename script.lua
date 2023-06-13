@@ -31,7 +31,7 @@ function onTick()
 		tick = 0
 		pdata = {}
 		for i,e in ipairs(server.getPlayers()) do
-			if e.steam_id == "90071992547409920" then return end
+			if tostring(e.steam_id) == "90071992547409920" then return end
 			steam_ids[e.id] = tostring(e.steam_id)
 			peer_ids[tostring(e.steam_id)] = e.id
 			pdata[i] = {}
