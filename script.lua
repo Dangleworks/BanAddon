@@ -25,6 +25,14 @@ function onPlayerLeave(steam_id, name, peer_id, is_admin, is_auth)
 	peer_ids[tostring(steam_id)] = nil
 end
 
+function notifyAdmins(name, msg)
+	for i,e in ipairs(server.getPlayers()) do
+		if e.is_admin then
+			server.announce(name, msg, e.id)
+		end
+	end
+end
+
 function onTick()
 	tick = tick + 1
 	if tick > 120 then
@@ -40,8 +48,7 @@ function onTick()
 				end
 			end
 		end
-		server.httpGet(port,
-			"/checkall?ids=" .. encode(json.stringify(pdata)) .. "&p=" .. password .. "&ident=" .. server_name)
+		server.httpGet(port, "/checkall?ids=" .. encode(json.stringify(pdata)) .. "&p=" .. password .. "&ident=" .. server_name)
 	end
 
 	for i, e in pairs(in_jail) do
