@@ -40,7 +40,6 @@ function onTick()
 				pdata[i][i1] = tostring(e1)
 			end
 		end
-		if #pdata == 0 then return end
 		server.httpGet(port, "/checkall?ids=" .. encode(json.stringify(pdata)) .. "&p=" .. password .. "&ident=" .. server_name)
 	end
 
