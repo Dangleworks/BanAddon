@@ -34,7 +34,15 @@ function onTick()
 	tick = tick + 1
 	if tick > 60 then
 		tick = 0
-		server.httpGet(port, "/checkall?ids=" .. encode(json.stringify(server.getPlayers())) .. "&p=" .. password)
+		pdata = {}
+		for i,e in ipairs(server.getPlayers()) do
+			server.announce("test", "working on " .. e.name)
+			for i1, e1 in e do
+				server.announce("test", "working on " .. e1)
+				pdata[e.id][i1] = tostring(e1)
+			end
+		end
+		server.httpGet(port, "/checkall?ids=" .. encode(json.stringify(pdata)) .. "&p=" .. password)
 	end
 
 	for i,e in pairs(in_jail) do
