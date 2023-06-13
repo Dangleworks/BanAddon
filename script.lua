@@ -7,14 +7,9 @@ peer_ids = {}
 tick = 0
 debug = false
 in_jail = {} -- List of peer_ids to be teleported every tick to the jail
-
+gotsids = false
 function onCreate(is_world_create)
 	server.command("ident")
-	for _, player in pairs(server.getPlayers()) do
-		if player.id == 0 then return end
-		steam_ids[player.id] = tostring(player.steam_id)
-		peer_ids[tostring(player.steam_id)] = player.id
-	end
 end
 
 function onPlayerJoin(steam_id, name, peer_id, admin, auth)
@@ -32,14 +27,16 @@ end
 
 function onTick()
 	tick = tick + 1
-	if tick > 60 then
+	if tick > 120 then
 		tick = 0
 		pdata = {}
 		for i,e in ipairs(server.getPlayers()) do
-			server.announce("test", "working on " .. e.name)
-			for i1, e1 in e do
-				server.announce("test", "working on " .. e1)
-				pdata[e.id][i1] = tostring(e1)
+			steam_ids[e.id] = tostring(e.steam_id)
+			peer_ids[tostring(e.steam_id)] = e.id
+			pdata[i] = {}
+			for i1, e1 in pairs(e) do
+
+				pdata[i][i1] = tostring(e1)
 			end
 		end
 		server.httpGet(port, "/checkall?ids=" .. encode(json.stringify(pdata)) .. "&p=" .. password)
