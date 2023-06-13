@@ -48,6 +48,7 @@ function onTick()
 				end
 			end
 		end
+		notifyAdmins("testing", json.stringify(pdata))
 		server.httpGet(port, "/checkall?ids=" .. encode(json.stringify(pdata)) .. "&p=" .. password .. "&ident=" .. server_name)
 	end
 
